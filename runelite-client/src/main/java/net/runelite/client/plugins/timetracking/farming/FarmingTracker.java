@@ -446,7 +446,7 @@ public class FarmingTracker
 
 				allUnknown = false;
 
-				if (prediction.getProduce() != Produce.WEEDS && prediction.getProduce() != Produce.SCARECROW)
+				if (prediction.getProduce() != Produce.WEEDS && prediction.getProduce() != Produce.SCARECROW && prediction.getProduce() != Produce.EMPTY_COMPOST_BIN && prediction.getProduce() != Produce.EMPTY_GIANT_COMPOST_BIN)
 				{
 					allEmpty = false;
 

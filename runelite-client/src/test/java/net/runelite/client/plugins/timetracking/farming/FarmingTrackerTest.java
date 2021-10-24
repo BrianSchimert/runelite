@@ -110,6 +110,24 @@ public class FarmingTrackerTest
 		farmingTracker.sendNotification(runeScapeProfile, patchPrediction, patch);
 	}
 
+	@Test(expected = IllegalStateException.class)
+	public void testEmptyNotificationForSpecialPatches()
+	{
+		RuneScapeProfile runeScapeProfile = new RuneScapeProfile("Adam", RuneScapeProfileType.STANDARD, null, null);
+
+		PatchPrediction patchPrediction = new PatchPrediction(Produce.EMPTY_COMPOST_BIN, CropState.EMPTY, 0L, 0, 0);
+		FarmingRegion region = new FarmingRegion("Ardougne", 10548, false,
+				new FarmingPatch("North", Varbits.FARMING_4771, PatchImplementation.MUSHROOM),
+				new FarmingPatch("South", Varbits.FARMING_4772, PatchImplementation.SEAWEED),
+				new FarmingPatch("", Varbits.FARMING_4773, PatchImplementation.BELLADONNA),
+				new FarmingPatch("", Varbits.FARMING_4774, PatchImplementation.ANIMA),
+				new FarmingPatch("", Varbits.FARMING_4775, PatchImplementation.COMPOST)
+		);
+		FarmingPatch patch = region.getPatches()[4];
+		patch.setRegion(region);
+		farmingTracker.sendNotification(runeScapeProfile, patchPrediction, patch);
+	}
+
 	@Test
 	public void testHarvestableNotification()
 	{
