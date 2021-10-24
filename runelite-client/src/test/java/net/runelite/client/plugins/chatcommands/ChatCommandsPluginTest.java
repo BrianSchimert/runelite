@@ -229,6 +229,15 @@ public class ChatCommandsPluginTest
 	}
 
 	@Test
+	public void testGrotesqueGuardians()
+	{
+		ChatMessage chatMessageEvent = new ChatMessage(null, GAMEMESSAGE, "", "Your Grotesque Guardians kill count is: <col=ff0000>4</col>.", null, 0);
+		chatCommandsPlugin.onChatMessage(chatMessageEvent);
+
+		verify(configManager).setRSProfileConfiguration("killcount", "grotesque guardians", 4);
+	}
+
+	@Test
 	public void testHerbiboar()
 	{
 		ChatMessage chatMessageEvent = new ChatMessage(null, GAMEMESSAGE, "", "Your herbiboar harvest count is: <col=ff0000>4091</col>.", null, 0);
