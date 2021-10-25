@@ -24,15 +24,14 @@
  */
 package net.runelite.client.plugins.interacthighlight;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
+import java.awt.*;
 import javax.inject.Inject;
 import net.runelite.api.Actor;
 import net.runelite.api.Client;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.NPC;
+import net.runelite.api.Point;
 import net.runelite.api.TileObject;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
@@ -44,6 +43,8 @@ import net.runelite.client.util.ColorUtil;
 class InteractHighlightOverlay extends Overlay
 {
 	private static final Color INTERACT_CLICK_COLOR = new Color(0x90ffffff);
+	private static final int MENU_OPTION_HEIGHT = 15;
+	private static final int MENU_TOP_SPACING = 5;
 
 	private final Client client;
 	private final InteractHighlightPlugin plugin;
@@ -78,7 +79,11 @@ class InteractHighlightOverlay extends Overlay
 			return;
 		}
 
-		MenuEntry top = menuEntries[menuEntries.length - 1];
+		MenuEntry top = client.isMenuOpen() ? checkCurrentMenuEntry(menuEntries) : menuEntries[menuEntries.length-1];
+		if (top == null)
+		{
+			return;
+		}
 		MenuAction menuAction = MenuAction.of(top.getType());
 
 		switch (menuAction)
@@ -120,6 +125,23 @@ class InteractHighlightOverlay extends Overlay
 				break;
 			}
 		}
+	}
+
+	private MenuEntry checkCurrentMenuEntry(final MenuEntry[] menuEntries)
+	{
+		final Point mousePosition = client.getMouseCanvasPosition();
+		final Rectangle menu = new Rectangle(client.getMenuX(), client.getMenuY(), client.getMenuWidth(), client.getMenuHeight());
+
+		if (menu.contains(mousePosition.getX(), mousePosition.getY()))
+		{
+			final int topPosition = mousePosition.getY() - MENU_TOP_SPACING - menu.y;
+			final int spacing = menuEntries.length - topPosition/MENU_OPTION_HEIGHT;
+			if (spacing >=0 && spacing < menuEntries.length)
+			{
+				return menuEntries[spacing];
+			}
+		}
+		return null;
 	}
 
 	private void renderTarget()
