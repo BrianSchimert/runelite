@@ -339,30 +339,7 @@ public class WintertodtPlugin extends Plugin
 		if (!neverNotify)
 		{
 			boolean shouldNotify = false;
-			switch (interruptType)
-			{
-				case COLD:
-					WintertodtNotifyDamage notify = config.notifyCold();
-					shouldNotify = notify == ALWAYS || (notify == INTERRUPT && wasInterrupted);
-					break;
-				case SNOWFALL:
-					notify = config.notifySnowfall();
-					shouldNotify = notify == ALWAYS || (notify == INTERRUPT && wasInterrupted);
-					break;
-				case BRAZIER:
-					notify = config.notifyBrazierDamage();
-					shouldNotify = notify == ALWAYS || (notify == INTERRUPT && wasInterrupted);
-					break;
-				case INVENTORY_FULL:
-					shouldNotify = config.notifyFullInv();
-					break;
-				case OUT_OF_ROOTS:
-					shouldNotify = config.notifyEmptyInv();
-					break;
-				case BRAZIER_WENT_OUT:
-					shouldNotify = config.notifyBrazierOut();
-					break;
-			}
+			shouldNotify = isShouldNotify(interruptType, wasInterrupted, shouldNotify);
 
 			if (shouldNotify)
 			{
@@ -374,6 +351,34 @@ public class WintertodtPlugin extends Plugin
 		{
 			currentActivity = WintertodtActivity.IDLE;
 		}
+	}
+
+	private boolean isShouldNotify(WintertodtInterruptType interruptType, boolean wasInterrupted, boolean shouldNotify) {
+		switch (interruptType)
+		{
+			case COLD:
+				WintertodtNotifyDamage notify = config.notifyCold();
+				shouldNotify = notify == ALWAYS || (notify == INTERRUPT && wasInterrupted);
+				break;
+			case SNOWFALL:
+				notify = config.notifySnowfall();
+				shouldNotify = notify == ALWAYS || (notify == INTERRUPT && wasInterrupted);
+				break;
+			case BRAZIER:
+				notify = config.notifyBrazierDamage();
+				shouldNotify = notify == ALWAYS || (notify == INTERRUPT && wasInterrupted);
+				break;
+			case INVENTORY_FULL:
+				shouldNotify = config.notifyFullInv();
+				break;
+			case OUT_OF_ROOTS:
+				shouldNotify = config.notifyEmptyInv();
+				break;
+			case BRAZIER_WENT_OUT:
+				shouldNotify = config.notifyBrazierOut();
+				break;
+		}
+		return shouldNotify;
 	}
 
 	private void notifyInterrupted(WintertodtInterruptType interruptType, boolean wasActivityInterrupted)
