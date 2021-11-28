@@ -806,15 +806,7 @@ public class ChatCommandsPlugin extends Plugin
 		ChatMessageType type = chatMessage.getType();
 		String search = message.substring(KILLCOUNT_COMMAND_STRING.length() + 1);
 
-		final String player;
-		if (type.equals(ChatMessageType.PRIVATECHATOUT))
-		{
-			player = client.getLocalPlayer().getName();
-		}
-		else
-		{
-			player = Text.sanitize(chatMessage.getName());
-		}
+		final String player = getString(type.equals(ChatMessageType.PRIVATECHATOUT), client.getLocalPlayer().getName(), Text.sanitize(chatMessage.getName()));
 
 		search = longBossName(search);
 
@@ -887,15 +879,7 @@ public class ChatCommandsPlugin extends Plugin
 
 		ChatMessageType type = chatMessage.getType();
 
-		final String player;
-		if (type == ChatMessageType.PRIVATECHATOUT)
-		{
-			player = client.getLocalPlayer().getName();
-		}
-		else
-		{
-			player = Text.sanitize(chatMessage.getName());
-		}
+		final String player = getString(type == ChatMessageType.PRIVATECHATOUT, client.getLocalPlayer().getName(), Text.sanitize(chatMessage.getName()));
 
 		Duels duels;
 		try
@@ -944,15 +928,7 @@ public class ChatCommandsPlugin extends Plugin
 
 		ChatMessageType type = chatMessage.getType();
 
-		final String player;
-		if (type.equals(ChatMessageType.PRIVATECHATOUT))
-		{
-			player = client.getLocalPlayer().getName();
-		}
-		else
-		{
-			player = Text.sanitize(chatMessage.getName());
-		}
+		final String player = getString(type.equals(ChatMessageType.PRIVATECHATOUT), client.getLocalPlayer().getName(), Text.sanitize(chatMessage.getName()));
 
 		int qp;
 		try
@@ -1018,15 +994,7 @@ public class ChatCommandsPlugin extends Plugin
 		ChatMessageType type = chatMessage.getType();
 		String search = message.substring(PB_COMMAND.length() + 1);
 
-		final String player;
-		if (type.equals(ChatMessageType.PRIVATECHATOUT))
-		{
-			player = client.getLocalPlayer().getName();
-		}
-		else
-		{
-			player = Text.sanitize(chatMessage.getName());
-		}
+		final String player = getString(type.equals(ChatMessageType.PRIVATECHATOUT), client.getLocalPlayer().getName(), Text.sanitize(chatMessage.getName()));
 
 		search = longBossName(search);
 
@@ -1107,15 +1075,7 @@ public class ChatCommandsPlugin extends Plugin
 
 		ChatMessageType type = chatMessage.getType();
 
-		final String player;
-		if (type == ChatMessageType.PRIVATECHATOUT)
-		{
-			player = client.getLocalPlayer().getName();
-		}
-		else
-		{
-			player = Text.sanitize(chatMessage.getName());
-		}
+		final String player = getString(type == ChatMessageType.PRIVATECHATOUT, client.getLocalPlayer().getName(), Text.sanitize(chatMessage.getName()));
 
 		int gc;
 		try
@@ -1182,15 +1142,7 @@ public class ChatCommandsPlugin extends Plugin
 
 		ChatMessageType type = chatMessage.getType();
 
-		final String player;
-		if (type.equals(ChatMessageType.PRIVATECHATOUT))
-		{
-			player = client.getLocalPlayer().getName();
-		}
-		else
-		{
-			player = Text.sanitize(chatMessage.getName());
-		}
+		final String player = getString(type.equals(ChatMessageType.PRIVATECHATOUT), client.getLocalPlayer().getName(), Text.sanitize(chatMessage.getName()));
 
 		Set<Integer> playerPetList;
 		try
@@ -1424,15 +1376,7 @@ public class ChatCommandsPlugin extends Plugin
 
 		ChatMessageType type = chatMessage.getType();
 
-		String player;
-		if (type == ChatMessageType.PRIVATECHATOUT)
-		{
-			player = client.getLocalPlayer().getName();
-		}
-		else
-		{
-			player = Text.sanitize(chatMessage.getName());
-		}
+		String player = getString(type == ChatMessageType.PRIVATECHATOUT, client.getLocalPlayer().getName(), Text.sanitize(chatMessage.getName()));
 
 		try
 		{
@@ -1635,16 +1579,7 @@ public class ChatCommandsPlugin extends Plugin
 			return;
 		}
 
-		String search;
-
-		if (message.equalsIgnoreCase(CLUES_COMMAND_STRING))
-		{
-			search = "total";
-		}
-		else
-		{
-			search = message.substring(CLUES_COMMAND_STRING.length() + 1);
-		}
+		String search = getString(message.equalsIgnoreCase(CLUES_COMMAND_STRING), "total", message.substring(CLUES_COMMAND_STRING.length() + 1));
 
 		try
 		{
@@ -1720,6 +1655,17 @@ public class ChatCommandsPlugin extends Plugin
 		{
 			log.warn("error looking up clues", ex);
 		}
+	}
+
+	private String getString(boolean b, String total, String substring) {
+		String search;
+
+		if (b) {
+			search = total;
+		} else {
+			search = substring;
+		}
+		return search;
 	}
 
 	/**
