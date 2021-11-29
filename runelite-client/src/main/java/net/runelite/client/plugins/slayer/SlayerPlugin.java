@@ -745,6 +745,15 @@ public class SlayerPlugin extends Plugin
 		}
 
 		BufferedImage taskImg = itemManager.getImage(itemSpriteId);
+		String taskTooltip = getTaskTooltip();
+
+		counter = new TaskCounter(taskImg, this, amount);
+		counter.setTooltip(String.format(taskTooltip, capsString(taskName), getIntProfileConfig(SlayerConfig.POINTS_KEY), getIntProfileConfig(SlayerConfig.STREAK_KEY)));
+
+		infoBoxManager.addInfoBox(counter);
+	}
+
+	private String getTaskTooltip() {
 		String taskTooltip = ColorUtil.wrapWithColorTag("%s", new Color(255, 119, 0)) + "</br>";
 
 		if (taskLocation != null && !taskLocation.isEmpty())
@@ -763,11 +772,7 @@ public class SlayerPlugin extends Plugin
 				+ ColorUtil.wrapWithColorTag("Start:", Color.YELLOW)
 				+ " " + initialAmount;
 		}
-
-		counter = new TaskCounter(taskImg, this, amount);
-		counter.setTooltip(String.format(taskTooltip, capsString(taskName), getIntProfileConfig(SlayerConfig.POINTS_KEY), getIntProfileConfig(SlayerConfig.STREAK_KEY)));
-
-		infoBoxManager.addInfoBox(counter);
+		return taskTooltip;
 	}
 
 	private void removeCounter()
