@@ -94,6 +94,7 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ClientShutdown;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.RuneScapeProfileChanged;
+import net.runelite.client.plugins.slayer.SlayerConfig;
 import net.runelite.client.util.ColorUtil;
 import net.runelite.http.api.config.ConfigClient;
 import net.runelite.http.api.config.ConfigEntry;
@@ -1197,5 +1198,27 @@ public class ConfigManager
 			log.info("migrated {} config keys", changes);
 		}
 		setConfiguration("runelite", migrationKey, 1);
+	}
+
+	public void migrateConfigKey(String key)
+	{
+		Object value = getConfiguration(SlayerConfig.GROUP_NAME, key);
+		if (value != null)
+		{
+			unsetConfiguration(SlayerConfig.GROUP_NAME, key);
+			setRSProfileConfiguration(SlayerConfig.GROUP_NAME, key, value);
+		}
+	}
+
+	public void setProfileConfig(String key, Object value)
+	{
+		if (value != null)
+		{
+			setRSProfileConfiguration(SlayerConfig.GROUP_NAME, key, value);
+		}
+		else
+		{
+			unsetRSProfileConfiguration(SlayerConfig.GROUP_NAME, key);
+		}
 	}
 }

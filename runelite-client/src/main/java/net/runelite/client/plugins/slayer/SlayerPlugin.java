@@ -326,24 +326,12 @@ public class SlayerPlugin extends Plugin
 		return value == null ? "" : value;
 	}
 
-	private void setProfileConfig(String key, Object value)
-	{
-		if (value != null)
-		{
-			configManager.setRSProfileConfiguration(SlayerConfig.GROUP_NAME, key, value);
-		}
-		else
-		{
-			configManager.unsetRSProfileConfiguration(SlayerConfig.GROUP_NAME, key);
-		}
-	}
-
 	private void save()
 	{
-		setProfileConfig(SlayerConfig.AMOUNT_KEY, amount);
-		setProfileConfig(SlayerConfig.INIT_AMOUNT_KEY, initialAmount);
-		setProfileConfig(SlayerConfig.TASK_NAME_KEY, taskName);
-		setProfileConfig(SlayerConfig.TASK_LOC_KEY, taskLocation);
+		configManager.setProfileConfig(SlayerConfig.AMOUNT_KEY, amount);
+		configManager.setProfileConfig(SlayerConfig.INIT_AMOUNT_KEY, initialAmount);
+		configManager.setProfileConfig(SlayerConfig.TASK_NAME_KEY, taskName);
+		configManager.setProfileConfig(SlayerConfig.TASK_LOC_KEY, taskLocation);
 	}
 
 	@Subscribe
@@ -393,7 +381,7 @@ public class SlayerPlugin extends Plugin
 				int amount = Integer.parseInt(mAssignBoss.group(2));
 				setTask(mAssignBoss.group(1), amount, amount);
 				int points = Integer.parseInt(mAssignBoss.group(3).replaceAll(",", ""));
-				setProfileConfig(SlayerConfig.POINTS_KEY, points);
+				configManager.setProfileConfig(SlayerConfig.POINTS_KEY, points);
 			}
 			else if (mCurrent.find())
 			{
@@ -417,7 +405,7 @@ public class SlayerPlugin extends Plugin
 
 					if (prevPoints != points)
 					{
-						setProfileConfig(SlayerConfig.POINTS_KEY, points);
+						configManager.setProfileConfig(SlayerConfig.POINTS_KEY, points);
 						removeCounter();
 						addCounter();
 					}
@@ -477,12 +465,12 @@ public class SlayerPlugin extends Plugin
 				if (mTasks != null)
 				{
 					int streak = Integer.parseInt(mTasks.replace(",", ""));
-					setProfileConfig(SlayerConfig.STREAK_KEY, streak);
+					configManager.setProfileConfig(SlayerConfig.STREAK_KEY, streak);
 				}
 				if (mPoints != null)
 				{
 					int points = Integer.parseInt(mPoints.replace(",", ""));
-					setProfileConfig(SlayerConfig.POINTS_KEY, points);
+					configManager.setProfileConfig(SlayerConfig.POINTS_KEY, points);
 				}
 			}
 
@@ -633,7 +621,7 @@ public class SlayerPlugin extends Plugin
 		}
 
 		// save changed value
-		setProfileConfig(SlayerConfig.AMOUNT_KEY, amount);
+		configManager.setProfileConfig(SlayerConfig.AMOUNT_KEY, amount);
 
 		if (!config.showInfobox())
 		{
@@ -899,25 +887,16 @@ public class SlayerPlugin extends Plugin
 
 	private void migrateConfig()
 	{
-		migrateConfigKey(SlayerConfig.TASK_NAME_KEY);
-		migrateConfigKey(SlayerConfig.AMOUNT_KEY);
-		migrateConfigKey(SlayerConfig.INIT_AMOUNT_KEY);
-		migrateConfigKey(SlayerConfig.TASK_LOC_KEY);
-		migrateConfigKey(SlayerConfig.STREAK_KEY);
-		migrateConfigKey(SlayerConfig.POINTS_KEY);
+		configManager.migrateConfigKey(SlayerConfig.TASK_NAME_KEY);
+		configManager.migrateConfigKey(SlayerConfig.AMOUNT_KEY);
+		configManager.migrateConfigKey(SlayerConfig.INIT_AMOUNT_KEY);
+		configManager.migrateConfigKey(SlayerConfig.TASK_LOC_KEY);
+		configManager.migrateConfigKey(SlayerConfig.STREAK_KEY);
+		configManager.migrateConfigKey(SlayerConfig.POINTS_KEY);
 		configManager.unsetConfiguration(SlayerConfig.GROUP_NAME, "expeditious");
 		configManager.unsetConfiguration(SlayerConfig.GROUP_NAME, "slaughter");
 		configManager.unsetRSProfileConfiguration(SlayerConfig.GROUP_NAME, "expeditious");
 		configManager.unsetRSProfileConfiguration(SlayerConfig.GROUP_NAME, "slaughter");
 	}
 
-	private void migrateConfigKey(String key)
-	{
-		Object value = configManager.getConfiguration(SlayerConfig.GROUP_NAME, key);
-		if (value != null)
-		{
-			configManager.unsetConfiguration(SlayerConfig.GROUP_NAME, key);
-			configManager.setRSProfileConfiguration(SlayerConfig.GROUP_NAME, key, value);
-		}
-	}
 }
