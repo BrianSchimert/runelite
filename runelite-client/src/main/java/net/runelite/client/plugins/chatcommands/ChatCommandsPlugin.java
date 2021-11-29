@@ -361,6 +361,105 @@ public class ChatCommandsPlugin extends Plugin
 		return petList != null ? petList : Collections.emptyList();
 	}
 
+	public void findKillCountMatcher(Matcher matcher) {
+		String boss = matcher.group(1);
+		int kc = Integer.parseInt(matcher.group(2));
+
+		String renamedBoss = KILLCOUNT_RENAMES
+				.getOrDefault(boss, boss)
+				// The config service doesn't support keys with colons in them
+				.replace(":", "");
+		if (boss != renamedBoss)
+		{
+			// Unset old TOB kc
+			unsetKc(boss);
+			unsetPb(boss);
+			unsetKc(boss.replace(":", "."));
+			unsetPb(boss.replace(":", "."));
+			// Unset old story mode
+			unsetKc("Theatre of Blood Story Mode");
+			unsetPb("Theatre of Blood Story Mode");
+		}
+
+		setKc(renamedBoss, kc);
+		// We either already have the pb, or need to remember the boss for the upcoming pb
+		if (lastPb > -1)
+		{
+			log.debug("Got out-of-order personal best for {}: {}", renamedBoss, lastPb);
+			setPb(renamedBoss, lastPb);
+			lastPb = -1;
+		}
+		else
+		{
+			lastBossKill = renamedBoss;
+			lastBossTime = client.getTickCount();
+		}
+		return;
+	}
+
+	public void findDualArenaWinMatcher(Matcher matcher, String message) {
+		final int oldWins = getKc("Duel Arena Wins");
+		final int wins = Integer.parseInt(matcher.group(2));
+		final String result = matcher.group(1);
+		int winningStreak = getKc("Duel Arena Win Streak");
+		int losingStreak = getKc("Duel Arena Lose Streak");
+
+		if (result.equals("won") && wins > oldWins)
+		{
+			losingStreak = 0;
+			winningStreak += 1;
+		}
+		else if (result.equals("were defeated"))
+		{
+			losingStreak += 1;
+			winningStreak = 0;
+		}
+		else
+		{
+			log.warn("unrecognized duel streak chat message: {}", message);
+		}
+
+		setKc("Duel Arena Wins", wins);
+		setKc("Duel Arena Win Streak", winningStreak);
+		setKc("Duel Arena Lose Streak", losingStreak);
+		return;
+	}
+
+	public void findHsPbMatcher(Matcher matcher) {
+		int floor = Integer.parseInt(matcher.group("floor"));
+		String floortime = matcher.group("floortime");
+		String floorpb = matcher.group("floorpb");
+		String otime = matcher.group("otime");
+		String opb = matcher.group("opb");
+
+		String pb = MoreObjects.firstNonNull(floorpb, floortime);
+		setPb("Hallowed Sepulchre Floor " + floor, timeStringToSeconds(pb));
+
+		if (otime != null)
+		{
+			pb = MoreObjects.firstNonNull(opb, otime);
+			setPb("Hallowed Sepulchre", timeStringToSeconds(pb));
+		}
+		return;
+	}
+
+	public void findCollectionLogMatcher(Matcher matcher) {
+		String item = matcher.group(1);
+		Pet pet = Pet.findPet(item);
+
+		if (pet != null)
+		{
+			List<Pet> petList = new ArrayList<>(getPetList());
+			if (!petList.contains(pet))
+			{
+				log.debug("New pet added: {}", pet);
+				petList.add(pet);
+				setPetList(petList);
+			}
+		}
+		return;
+	}
+
 	@Subscribe
 	public void onChatMessage(ChatMessage chatMessage)
 	{
@@ -376,68 +475,14 @@ public class ChatCommandsPlugin extends Plugin
 		Matcher matcher = KILLCOUNT_PATTERN.matcher(message);
 		if (matcher.find())
 		{
-			String boss = matcher.group(1);
-			int kc = Integer.parseInt(matcher.group(2));
-
-			String renamedBoss = KILLCOUNT_RENAMES
-				.getOrDefault(boss, boss)
-				// The config service doesn't support keys with colons in them
-				.replace(":", "");
-			if (boss != renamedBoss)
-			{
-				// Unset old TOB kc
-				unsetKc(boss);
-				unsetPb(boss);
-				unsetKc(boss.replace(":", "."));
-				unsetPb(boss.replace(":", "."));
-				// Unset old story mode
-				unsetKc("Theatre of Blood Story Mode");
-				unsetPb("Theatre of Blood Story Mode");
-			}
-
-			setKc(renamedBoss, kc);
-			// We either already have the pb, or need to remember the boss for the upcoming pb
-			if (lastPb > -1)
-			{
-				log.debug("Got out-of-order personal best for {}: {}", renamedBoss, lastPb);
-				setPb(renamedBoss, lastPb);
-				lastPb = -1;
-			}
-			else
-			{
-				lastBossKill = renamedBoss;
-				lastBossTime = client.getTickCount();
-			}
+			findKillCountMatcher(matcher);
 			return;
 		}
 
 		matcher = DUEL_ARENA_WINS_PATTERN.matcher(message);
 		if (matcher.find())
 		{
-			final int oldWins = getKc("Duel Arena Wins");
-			final int wins = Integer.parseInt(matcher.group(2));
-			final String result = matcher.group(1);
-			int winningStreak = getKc("Duel Arena Win Streak");
-			int losingStreak = getKc("Duel Arena Lose Streak");
-
-			if (result.equals("won") && wins > oldWins)
-			{
-				losingStreak = 0;
-				winningStreak += 1;
-			}
-			else if (result.equals("were defeated"))
-			{
-				losingStreak += 1;
-				winningStreak = 0;
-			}
-			else
-			{
-				log.warn("unrecognized duel streak chat message: {}", message);
-			}
-
-			setKc("Duel Arena Wins", wins);
-			setKc("Duel Arena Win Streak", winningStreak);
-			setKc("Duel Arena Lose Streak", losingStreak);
+			findDualArenaWinMatcher(matcher, message);
 		}
 
 		matcher = DUEL_ARENA_LOSSES_PATTERN.matcher(message);
@@ -487,20 +532,7 @@ public class ChatCommandsPlugin extends Plugin
 		matcher = HS_PB_PATTERN.matcher(message);
 		if (matcher.find())
 		{
-			int floor = Integer.parseInt(matcher.group("floor"));
-			String floortime = matcher.group("floortime");
-			String floorpb = matcher.group("floorpb");
-			String otime = matcher.group("otime");
-			String opb = matcher.group("opb");
-
-			String pb = MoreObjects.firstNonNull(floorpb, floortime);
-			setPb("Hallowed Sepulchre Floor " + floor, timeStringToSeconds(pb));
-
-			if (otime != null)
-			{
-				pb = MoreObjects.firstNonNull(opb, otime);
-				setPb("Hallowed Sepulchre", timeStringToSeconds(pb));
-			}
+			findHsPbMatcher(matcher);
 		}
 
 		matcher = HS_KC_FLOOR_PATTERN.matcher(message);
@@ -527,19 +559,7 @@ public class ChatCommandsPlugin extends Plugin
 		matcher = COLLECTION_LOG_ITEM_PATTERN.matcher(message);
 		if (matcher.find())
 		{
-			String item = matcher.group(1);
-			Pet pet = Pet.findPet(item);
-
-			if (pet != null)
-			{
-				List<Pet> petList = new ArrayList<>(getPetList());
-				if (!petList.contains(pet))
-				{
-					log.debug("New pet added: {}", pet);
-					petList.add(pet);
-					setPetList(petList);
-				}
-			}
+			findCollectionLogMatcher(matcher);
 		}
 	}
 
