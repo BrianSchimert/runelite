@@ -446,38 +446,43 @@ public class AgilityPlugin extends Plugin
 
 		if (Obstacles.SHORTCUT_OBSTACLE_IDS.containsKey(newObject.getId()))
 		{
-			AgilityShortcut closestShortcut = null;
-			int distance = -1;
-
-			// Find the closest shortcut to this object
-			for (AgilityShortcut shortcut : Obstacles.SHORTCUT_OBSTACLE_IDS.get(newObject.getId()))
-			{
-				if (!shortcut.matches(newObject))
-				{
-					continue;
-				}
-
-				if (shortcut.getWorldLocation() == null)
-				{
-					closestShortcut = shortcut;
-					break;
-				}
-				else
-				{
-					int newDistance = shortcut.getWorldLocation().distanceTo2D(newObject.getWorldLocation());
-					if (closestShortcut == null || newDistance < distance)
-					{
-						closestShortcut = shortcut;
-						distance = newDistance;
-					}
-				}
-			}
+			AgilityShortcut closestShortcut = getClosestAgilityShortcut(newObject);
 
 			if (closestShortcut != null)
 			{
 				obstacles.put(newObject, new Obstacle(tile, closestShortcut));
 			}
 		}
+	}
+
+	private AgilityShortcut getClosestAgilityShortcut(TileObject newObject) {
+		AgilityShortcut closestShortcut = null;
+		int distance = -1;
+
+		// Find the closest shortcut to this object
+		for (AgilityShortcut shortcut : Obstacles.SHORTCUT_OBSTACLE_IDS.get(newObject.getId()))
+		{
+			if (!shortcut.matches(newObject))
+			{
+				continue;
+			}
+
+			if (shortcut.getWorldLocation() == null)
+			{
+				closestShortcut = shortcut;
+				break;
+			}
+			else
+			{
+				int newDistance = shortcut.getWorldLocation().distanceTo2D(newObject.getWorldLocation());
+				if (closestShortcut == null || newDistance < distance)
+				{
+					closestShortcut = shortcut;
+					distance = newDistance;
+				}
+			}
+		}
+		return closestShortcut;
 	}
 
 	@Subscribe
