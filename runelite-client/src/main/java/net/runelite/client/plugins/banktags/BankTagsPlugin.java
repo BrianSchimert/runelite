@@ -481,6 +481,36 @@ public class BankTagsPlugin extends Plugin implements MouseWheelListener
 		}
 	}
 
+	public void calculateCorrectItemPosition(Widget child, int items) {
+		if (child.getItemId() != -1 && !child.isHidden())
+		{
+			// calculate correct item position as if this was a normal tab
+			int adjYOffset = (items / ITEMS_PER_ROW) * ITEM_VERTICAL_SPACING;
+			int adjXOffset = (items % ITEMS_PER_ROW) * ITEM_HORIZONTAL_SPACING + ITEM_ROW_START;
+
+			if (child.getOriginalY() != adjYOffset)
+			{
+				child.setOriginalY(adjYOffset);
+				child.revalidate();
+			}
+
+			if (child.getOriginalX() != adjXOffset)
+			{
+				child.setOriginalX(adjXOffset);
+				child.revalidate();
+			}
+
+			items++;
+		}
+
+		// separator line or tab text
+		if (child.getSpriteId() == SpriteID.RESIZEABLE_MODE_SIDE_PANEL_BACKGROUND
+				|| child.getText().contains("Tab"))
+		{
+			child.setHidden(true);
+		}
+	}
+
 	@Subscribe
 	public void onScriptPostFired(ScriptPostFired event)
 	{
@@ -530,33 +560,7 @@ public class BankTagsPlugin extends Plugin implements MouseWheelListener
 
 		for (Widget child : containerChildren)
 		{
-			if (child.getItemId() != -1 && !child.isHidden())
-			{
-				// calculate correct item position as if this was a normal tab
-				int adjYOffset = (items / ITEMS_PER_ROW) * ITEM_VERTICAL_SPACING;
-				int adjXOffset = (items % ITEMS_PER_ROW) * ITEM_HORIZONTAL_SPACING + ITEM_ROW_START;
-
-				if (child.getOriginalY() != adjYOffset)
-				{
-					child.setOriginalY(adjYOffset);
-					child.revalidate();
-				}
-
-				if (child.getOriginalX() != adjXOffset)
-				{
-					child.setOriginalX(adjXOffset);
-					child.revalidate();
-				}
-
-				items++;
-			}
-
-			// separator line or tab text
-			if (child.getSpriteId() == SpriteID.RESIZEABLE_MODE_SIDE_PANEL_BACKGROUND
-				|| child.getText().contains("Tab"))
-			{
-				child.setHidden(true);
-			}
+			calculateCorrectItemPosition(child, items);
 		}
 
 		updateBankContainerScrollHeight(items);
